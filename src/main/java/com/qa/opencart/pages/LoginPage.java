@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import com.qa.opencart.factory.DriverFactory;
 import com.qa.opencart.utils.Constants;
 import com.qa.opencart.utils.ElementUtil;
 
@@ -55,7 +54,7 @@ public class LoginPage {
 	
 	@Step("navigate To Register Page")
 	public RegisterPage navigateToRegisterPage() {
-		System.out.println("Navigate to Register Page");
+		LOGGER.info("Navigate to Register page....");
 		elementUtil.doClick(registerLink);
 		return new RegisterPage(driver);
 	}
