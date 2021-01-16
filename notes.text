@@ -1,0 +1,32 @@
+Local branching process:
+
+1. have one master branch
+2. create a branch -- sign up -- git branch signup
+2.a : switch to sign up branch -- git checkout branch
+*signup & master
+2.b: Eclipse project should be reflected with sign up branch
+3. create/modify your code in sign up brnach
+4. git status
+5. git add <files>
+6. git commit -m "reason"
+7. git push origin signup
+8. sign up branch is created in Remote
+9. Raise a PR at remote -- from the Pull Request tab in GIT Repo
+10. PR Process and approve it
+11. merget at remote to master -- click on merge button in GIT Repo
+12. sign up changes should be reflected in master in remote
+13. Take the latest pull from remote master to local master
+---git pull origin master
+====================
+Another Team member(Tom): had alradty cloed with master 1.0
+1. already having master branch 1.0
+2. take the latest pull from Remote master to local master
+--git pull origin master
+==============
+New Team member:
+1. Ask for the Git Repo URL
+2. Clone the Repo
+3. Import the code into Eclipse
+4. git branch -- master
+5. Follow "Local branching process" from step 2 to 13.
+===================
