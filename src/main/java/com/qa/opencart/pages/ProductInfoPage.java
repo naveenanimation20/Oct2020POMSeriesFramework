@@ -55,10 +55,12 @@ public class ProductInfoPage {
 	}
 	
 	public void selectQuantity(String qty) {
+		System.out.println("quantiy : " + qty);
 		elementUtil.doSendKeys(quantity, qty);
 	}
 	
 	public void addToCart() {
+		System.out.println("add to cart....");
 		elementUtil.doClick(addToCartButton);
 	}
 	
