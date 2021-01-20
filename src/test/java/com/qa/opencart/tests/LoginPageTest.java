@@ -30,6 +30,7 @@ public class LoginPageTest extends BaseTest {
 	@Description("verify forgot pwd link test...")
 	@Severity(SeverityLevel.CRITICAL)
 	public void forgotPwdLinkTest() {
+		System.out.println("verifying forgot pwd link on login page");
 		Assert.assertTrue(loginPage.isForgotPwdLinkExist());
 	}
 
