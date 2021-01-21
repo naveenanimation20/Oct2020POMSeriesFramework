@@ -23,15 +23,14 @@ import io.github.bonigarcia.wdm.WebDriverManager;
  *
  */
 public class DriverFactory {
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(DriverFactory.class));
+	private static final Logger LOGGER = Logger.getLogger(String.valueOf(DriverFactory.class));
 
 	WebDriver driver;
 	Properties prop;
 	public static String highlight;
 	OptionsManager optionsManager;
-	
+
 	public static ThreadLocal<WebDriver> tlDriver = new ThreadLocal<>();
-	
 
 	/**
 	 * This method is used to initialize the webdriver on the basis of given browser
@@ -46,19 +45,19 @@ public class DriverFactory {
 		LOGGER.info("browser name is: " + browserName);
 		highlight = prop.getProperty("highlight").trim();
 		optionsManager = new OptionsManager(prop);
-		
+
 		if (browserName.equals("chrome")) {
 			LOGGER.info("setup chrome browser");
 			WebDriverManager.chromedriver().setup();
 			tlDriver.set(new ChromeDriver(optionsManager.getChromeOptions()));
-		} 
-		
+		}
+
 		else if (browserName.equals("firefox")) {
 			LOGGER.info("setup FF browser");
 			WebDriverManager.firefoxdriver().setup();
 			tlDriver.set(new FirefoxDriver(optionsManager.getFirefoxOptions()));
-		} 
-		
+		}
+
 		else if (browserName.equals("safari")) {
 			LOGGER.info("setup safari browser");
 			tlDriver.set(new SafariDriver());
@@ -73,11 +72,10 @@ public class DriverFactory {
 		return getDriver();
 
 	}
-	
+
 	public static synchronized WebDriver getDriver() {
 		return tlDriver.get();
 	}
-		
 
 	/**
 	 * This method is used to initialize the properties from config file.
@@ -85,14 +83,38 @@ public class DriverFactory {
 	 * @return returns Properties prop
 	 */
 	public Properties init_prop() {
-
+		FileInputStream ip = null;
+		String env = System.getProperty("env");
+		LOGGER.info("Running on Environment : " + env);
 		prop = new Properties();
+
 		try {
-			FileInputStream ip = new FileInputStream("./src/test/resources/config/config.properties");
-			prop.load(ip);
+			switch (env) {
+			case "qa":
+				ip = new FileInputStream("./src/test/resources/config/qa.config.properties");
+				break;
+			case "stage":
+				ip = new FileInputStream("./src/test/resources/config/stage.config.properties");
+				break;
+			case "dev":
+				ip = new FileInputStream("./src/test/resources/config/dev.config.properties");
+				break;
+			case "prod":
+				ip = new FileInputStream("./src/test/resources/config/config.properties");
+				break;
+
+			default:
+				break;
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			LOGGER.error("File Not found at the given location....");
+
+		}
+
+		try {
+			prop.load(ip);
+		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -101,13 +123,12 @@ public class DriverFactory {
 	}
 
 	/**
-	 * take sceenshot
-	 * Ashot
+	 * take sceenshot Ashot
 	 */
 	public String getScreenshot() {
-		String src = ((TakesScreenshot)getDriver()).getScreenshotAs(OutputType.BASE64);
+		String src = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.BASE64);
 		File srcFile = new File(src);
-		String path = System.getProperty("user.dir")+ "/screenshots/"+System.currentTimeMillis()+".png";
+		String path = System.getProperty("user.dir") + "/screenshots/" + System.currentTimeMillis() + ".png";
 		File destination = new File(path);
 		try {
 			FileUtils.copyFile(srcFile, destination);
@@ -117,8 +138,5 @@ public class DriverFactory {
 		}
 		return path;
 	}
-	
-	
-	
-	
+
 }
