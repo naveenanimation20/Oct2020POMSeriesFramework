@@ -85,9 +85,8 @@ public class DriverFactory {
 	public Properties init_prop() {
 		FileInputStream ip = null;
 		String env = System.getProperty("env");
-		LOGGER.info("Running on Environment : " + env);
+		LOGGER.info("Running on Environment -->: " + env);
 		prop = new Properties();
-
 		try {
 			switch (env) {
 			case "qa":
