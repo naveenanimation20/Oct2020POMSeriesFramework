@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -12,7 +14,10 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -39,23 +44,34 @@ public class DriverFactory {
 	 * @param browserName
 	 * @return
 	 */
-	public WebDriver init_driver(Properties prop) {
+	public WebDriver init_driver(String browserName, String browserVersion) {
 
-		String browserName = prop.getProperty("browser");
+		//String browserName = prop.getProperty("browser");
 		LOGGER.info("browser name is: " + browserName);
+		
 		highlight = prop.getProperty("highlight").trim();
 		optionsManager = new OptionsManager(prop);
 
 		if (browserName.equals("chrome")) {
+
 			LOGGER.info("setup chrome browser");
 			WebDriverManager.chromedriver().setup();
-			tlDriver.set(new ChromeDriver(optionsManager.getChromeOptions()));
+			if (Boolean.parseBoolean(prop.getProperty("remote"))) {
+				init_remoteDriver("chrome", browserVersion);
+			} else {
+				tlDriver.set(new ChromeDriver(optionsManager.getChromeOptions()));
+			}
 		}
 
 		else if (browserName.equals("firefox")) {
 			LOGGER.info("setup FF browser");
 			WebDriverManager.firefoxdriver().setup();
-			tlDriver.set(new FirefoxDriver(optionsManager.getFirefoxOptions()));
+			if (Boolean.parseBoolean(prop.getProperty("remote"))) {
+				init_remoteDriver("firefox", browserVersion);
+			} else {
+				tlDriver.set(new FirefoxDriver(optionsManager.getFirefoxOptions()));
+			}
+
 		}
 
 		else if (browserName.equals("safari")) {
@@ -73,6 +89,43 @@ public class DriverFactory {
 
 	}
 
+	private void init_remoteDriver(String browser, String browserVersion) {
+
+		System.out.println("Running test on remote grid server: " + browser);
+
+		if (browser.equals("chrome")) {
+			DesiredCapabilities cap = DesiredCapabilities.chrome();
+			cap.setCapability("browserName", "chrome");
+			cap.setCapability("browserVersion", browserVersion);
+			cap.setCapability("enableVNC", true);
+			cap.setCapability("enableVideo", true);
+			cap.setCapability(ChromeOptions.CAPABILITY, optionsManager.getChromeOptions());
+
+			try {
+				tlDriver.set(new RemoteWebDriver(new URL(prop.getProperty("huburl")), cap));
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		else if (browser.equals("firefox")) {
+			DesiredCapabilities cap = DesiredCapabilities.firefox();
+			cap.setCapability("browserName", "firefox");
+			cap.setCapability("browserVersion", browserVersion);
+			cap.setCapability("enableVNC", true);
+			cap.setCapability("enableVideo", true);
+			cap.setCapability(ChromeOptions.CAPABILITY, optionsManager.getFirefoxOptions());
+
+			try {
+				tlDriver.set(new RemoteWebDriver(new URL(prop.getProperty("huburl")), cap));
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
 	public static synchronized WebDriver getDriver() {
 		return tlDriver.get();
 	}
@@ -84,31 +137,42 @@ public class DriverFactory {
 	 */
 	public Properties init_prop() {
 		FileInputStream ip = null;
+		prop = new Properties();
 		String env = System.getProperty("env");
 		LOGGER.info("Running on Environment -->: " + env);
-		prop = new Properties();
-		try {
-			switch (env) {
-			case "qa":
-				ip = new FileInputStream("./src/test/resources/config/qa.config.properties");
-				break;
-			case "stage":
-				ip = new FileInputStream("./src/test/resources/config/stage.config.properties");
-				break;
-			case "dev":
-				ip = new FileInputStream("./src/test/resources/config/dev.config.properties");
-				break;
-			case "prod":
+		System.out.println("Running on Environment -->: " + env);
+
+		if (env == null) {
+			try {
 				ip = new FileInputStream("./src/test/resources/config/config.properties");
-				break;
-
-			default:
-				break;
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			LOGGER.error("File Not found at the given location....");
+		} else {
 
+			try {
+				switch (env) {
+				case "qa":
+					ip = new FileInputStream("./src/test/resources/config/qa.config.properties");
+					break;
+				case "stage":
+					ip = new FileInputStream("./src/test/resources/config/stage.config.properties");
+					break;
+				case "dev":
+					ip = new FileInputStream("./src/test/resources/config/dev.config.properties");
+					break;
+				case "prod":
+					ip = new FileInputStream("./src/test/resources/config/config.properties");
+					break;
+
+				default:
+					break;
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				LOGGER.error("File Not found at the given location....");
+
+			}
 		}
 
 		try {
